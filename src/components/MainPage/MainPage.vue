@@ -1,56 +1,43 @@
 <script lang="ts">
 import axios from 'axios'
 import events from "events";
-import {ICity} from "./mainPage";
-export default {
+import {ICity, IExcursion} from "./mainPage";
+import {defineComponent} from "vue";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {faChevronDown, faStar, faTimes} from "@fortawesome/free-solid-svg-icons";
+export default defineComponent({
   name: 'MainPage',
-  // props: {
-  //   title: {
-  //     type: String
-  //   },
-  //   nameExcursion: {
-  //     type: String
-  //   },
-  //   nameTown: {
-  //     type: String
-  //   },
-  //   arrExcursion: {
-  //     type: Array
-  //   },
-  //   searchName: {
-  //     type: String
-  //   },
-  //   isVisible: {
-  //     type: Boolean
-  //   },
-  //   citysArr: {
-  //     type: Array<ICity>
-  //   },
-  //   selectItem: {
-  //     type: Object
-  //   }
-  // },
+  components: {FontAwesomeIcon},
   data() {
     return {
       title: `Экскурсии по всему миру` as string,
       nameExcursion: 'Введите название экскурсии' as string,
       nameTown: 'Выбрать город' as string,
       arrExcursion: [],
-      searchName: '' as string,
+      searchName: 'Введите название экскурсии' as string,
       isVisible: false as boolean,
-      selectItem: null,
-      citysArr: [] as Array<ICity>
+      selectItem: {
+       name: 'Выбрать город' as string} as ICity,
+      citysArr: [] as Array<ICity>,
+      select: false as boolean,
+      excursionArr: [] as Array<IExcursion>,
+
     }
   },
   methods: {
-    getExcursion(str1: string, event: events): string {
-      console.log('getExcursion event', event)
-      return str1
+    faStar() {
+      return faStar
+    },
+    faChevronDown() {
+      return faChevronDown
+    },
+    faTimes() {
+      return faTimes
     },
     getExcursionByTown(str1: string, event: events) {
       console.log('getExcursionByTown', event)
     },
-    async getCities(citysArr: Array<ICity>) {
+    async getCities() {
 
       const response = await axios.get(
           `https://thingproxy.freeboard.io/fetch/https://api.sputnik8.com/v1/cities?api_key=873fa71c061b0c36d9ad7e47ec3635d9&username=frontend@sputnik8.com`,
@@ -59,17 +46,71 @@ export default {
               'Accept': 'application/json'
             }
           })
-      citysArr = await response.data ;
-      console.log('this.citysArr',citysArr )
-      //    .then(response => response.json()).then((res) => {
-      //   console.log("res", res)
-      //  this.citysArr = res;
-      // })
+      this.citysArr = await response.data ;
+    },
+     async setItem(city: ICity) {
+      console.log('city', city);
+      this.selectItem = city;
+      this.select = true;
+      this.isVisible = false;
+      await this.getExcursion();
+      const copy = this.excursionArr.filter((el) => {
+        console.log('el.city_id', el.city_id);
+        console.log('city.id', city.id);
+        console.log('el.city_id === city.id', Boolean(el.city_id === city.id))
+        if (el.city_id === city.id) {
+          return true
+      }
+      });
+      this.excursionArr = structuredClone(copy);
+      console.log('this.excursionArr 2', this.excursionArr)
+    },
+    cleanExcursion() {
+
+    },
+    async getExcursion() {
+    const responce = await axios.get(
+        `https://thingproxy.freeboard.io/fetch/https://api.sputnik8.com/v1/products?api_key=873fa71c061b0c36d9ad7e47ec3635d9&username=frontend@sputnik8.com`,
+        {
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+      this.excursionArr = await responce.data;
+    console.log('this.excursionArr 1', this.excursionArr)
+
+    },
+    typeActivityPipe(str: string) {
+      switch (str) {
+        case 'tour': {
+          return 'тур';
+        }
+        case 'entry_ticket': {
+          return 'круиз';
+        }
+      }
+    },
+    getExcursionByName(str: string, event: events){
+      console.log('event', event)
+      if (this.select) {
+        this.excursionArr.filter((el) => {
+          if (el.title.toLowerCase().includes(str.toLowerCase())){
+            return el;
+          }
+        })
+      } else {
+          this.getExcursion();
+        this.excursionArr.filter((el) => {
+          if (el.title.toLowerCase().includes(str.toLowerCase())){
+            return el;
+          }
+        })
+      }
     }
   },
   mounted() {
   }
-}
+})
 
 
 </script>
@@ -78,16 +119,37 @@ export default {
 <div class="container">
   <h1>{{ title }}</h1>
   <div class="inputs">
-    <input class="search" v-model="this.searchName" v-on:keyup="getExcursion(this.searchName, $event)" >
+    <div class="nameSearch">
+      <i class="fa-times"></i>
+      <input class="search" v-model="this.searchName" v-on:keyup="getExcursionByName(this.searchName, $event)" >
+      <FontAwesomeIcon @click='cleanExcursion()' class="input-icon" :icon="faTimes()" :style="{ color: '#999999' }"/>
+    </div>
+
     <div class="dropdown-wrapper">
-      <div @click="isVisible = !isVisible; getCities(this.citysArr)" class="dropdown-popover" >
-        <input  v-model="this.selectItem" v-on:keyup="getExcursionByTown(this.selectItem, $event)">
-        <div v-if="isVisible" class="options">
+      <div  class="dropdown-popover" >
+        <div>
+          <input  v-model="this.selectItem.name">
+          <FontAwesomeIcon @click="isVisible = !isVisible; getCities()" class="input-icon" :icon="faChevronDown()" :style="{ color: '#999999' }"/>
+        </div>
+        <div v-if="isVisible && (this.citysArr.length !==0 )" class="options">
           <ul>
-            <li v-for="(city, index) in this.citysArr" :key="{index}">{{city.name}}</li>
+            <li v-for="(city, index) in citysArr" :key="{index}" @click='setItem(city)'>{{city.name}}</li>
           </ul>
         </div>
       </div>
+    </div>
+  </div>
+  <div v-if="this.select">
+    <div v-for="(excursion, index) in excursionArr" :key="{index}">
+      <img v-bind:src="excursion.main_photo.small">
+      <div>
+        <FontAwesomeIcon :icon="faStar()" :style="{ color: '#ffd300' }"></FontAwesomeIcon>
+        <div class="rating">{{excursion.rating}}</div>
+        <div class="reviews-with-text">({{excursion.reviews_with_text}})</div>
+      </div>
+      <h3>{{excursion.title}}</h3>
+      <h2>от {{excursion.price}}</h2>
+      <span>за {{typeActivityPipe(excursion.activity_type)}}</span>
     </div>
   </div>
 </div>
@@ -95,16 +157,31 @@ export default {
 
 <style>
 .container {
-  height: 100%;
+  height: auto;
 }
 
 .inputs {
   display: block;
 }
 
+FontAwesomeIcon {
+  color: rgba(153, 153, 153, 1);
+  background-color: rgba(153, 153, 153, 1);
+}
+
 input {
   width: 300px;
   margin-right: 10px;
+  color: rgba(153, 153, 153, 1);
+}
+
+.input-icon {
+  position: relative;
+  left: -35px;
+}
+
+.nameSearch {
+  display: inline-block;
 }
 
 .dropdown-wrapper {
@@ -136,7 +213,7 @@ input {
         list-style: none;
         text-align: left;
         padding-left: 3px;
-        max-height: 170px;
+        height: 170px;
         overflow-y: scroll;
         scrollbar-width: thin;
         overflow-x: hidden;
@@ -148,6 +225,13 @@ input {
           padding: 13px 15px;
           font-weight: 400;
           font-size: 14px;
+
+          &:hover {
+            background: #70878a;
+            color: #fff;
+            font-weight: bold;
+          }
+
         }
 
       }

@@ -1,36 +1,27 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/Logo.svg">
-    <MainPage title="Экскурсии по всему миру"/>
-  </div>
+  <img alt="Vue logo" src="./assets/Logo.svg">
+  <MainPage msg="Welcome to Your Vue.js + TypeScript App"/>
 </template>
 
-<script type="module">
-import MainPage from "./components/MainPage/MainPage.vue";
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
+import MainPage from "@/components/MainPage/MainPage.vue";
 
-export default {
-  name: 'app',
+@Options({
   components: {
     MainPage,
-  }
-}
+  },
+})
+export default class App extends Vue {}
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  height: 100%;
-
-  img {
-    margin-top: 60px;
-  }
-
-  MainPage {
-    height: 100%;
-  }
+  margin-top: 60px;
 }
 </style>

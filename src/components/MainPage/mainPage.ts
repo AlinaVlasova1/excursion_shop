@@ -1,5 +1,5 @@
-import * as events from "events";
 import axios from "axios";
+import events from "events";
 
 export function getExcursion(str1: string, event: events): string {
     console.log('event', event)
@@ -14,8 +14,7 @@ export interface ICity {
 }
 export async function getCities(citysArr: Array<ICity>) {
 
-    const response = await  axios.get
-    (
+    const response = await axios.get(
         `https://thingproxy.freeboard.io/fetch/https://api.sputnik8.com/v1/cities?api_key=873fa71c061b0c36d9ad7e47ec3635d9&username=frontend@sputnik8.com`,
         {
             headers: {

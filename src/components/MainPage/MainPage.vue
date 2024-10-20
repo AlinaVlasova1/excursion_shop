@@ -293,18 +293,4 @@
         line-height: 22px;
       }
     }
-
-  .loading {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 10px solid #70878a;
-    border-top-color: rgba(153, 153, 153, 1);
-    animation: loading 1s linear infinite;
-  }
-  @keyframes loading {
-    to {
-      transform: rotate(360deg);
-    }
-  }
 </style>

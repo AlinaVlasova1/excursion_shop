@@ -131,7 +131,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-    <div v-if="this.excursionToDisplayArr.length !== 0 && (this.isNameEmpty() || this.isCityEmpty())" class="cards">
+    <div v-if="this.excursionToDisplayArr.length !== 0 && (!this.isNameEmpty() || !this.isCityEmpty())" class="cards">
       <div v-for="(excursion, index) in excursionToDisplayArr" :key="{index}" class="card">
         <CardExcursion :excursion="excursion"></CardExcursion>
       </div>

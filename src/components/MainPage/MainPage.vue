@@ -1,6 +1,5 @@
 <script lang="ts">
 import axios from 'axios'
-import events from "events";
 import {ICity, IExcursion} from "./mainPage";
 import {defineComponent} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
@@ -21,6 +20,7 @@ export default defineComponent({
       } as ICity,
       citysArr: [] as Array<ICity>,
       select: false as boolean,
+      isSearchName: false as boolean,
       excursionArr: [] as Array<IExcursion>,
       clearFilter: true as boolean
     }
@@ -35,9 +35,6 @@ export default defineComponent({
     faTimes() {
       return faTimes
     },
-    getExcursionByTown(str1: string, event: events) {
-      console.log('getExcursionByTown', event)
-    },
     async getCities() {
 
       const response = await axios.get(
@@ -51,24 +48,34 @@ export default defineComponent({
     },
      async setItem(city: ICity) {
       this.clearFilter = false;
-      console.log('city', city);
       this.selectItem = city;
       this.select = true;
       this.isVisible = false;
-      await this.getExcursion();
-      const copy = this.excursionArr.filter((el) => {
-        console.log('el.city_id', el.city_id);
-        console.log('city.id', city.id);
-        console.log('el.city_id === city.id', Boolean(el.city_id === city.id))
-        if (el.city_id === city.id) {
-          return true
+      if (this.isSearchName) {
+        const copy = this.excursionArr.filter((el) => {
+          if (el.city_id === city.id) {
+            return true
+          }
+        });
+        this.excursionArr = structuredClone(copy);
+      } else {
+        await this.getExcursion();
+        const copy = this.excursionArr.filter((el) => {
+          if (el.city_id === city.id) {
+            return true
+          }
+        });
+        this.excursionArr = structuredClone(copy);
       }
-      });
-      this.excursionArr = structuredClone(copy);
-      console.log('this.excursionArr 2', this.excursionArr)
     },
-    cleanExcursion() {
-
+    async cleanExcursion() {
+      this.searchName = 'Введите название экскурсии';
+      this.isSearchName = false;
+      if (this.select) {
+        await this.setItem(this.selectItem);
+      } else {
+        this.clearFilter = true;
+      }
     },
     async getExcursion() {
     const responce = await axios.get(
@@ -79,7 +86,6 @@ export default defineComponent({
           }
         })
       this.excursionArr = await responce.data;
-    console.log('this.excursionArr 1', this.excursionArr)
 
     },
     typeActivityPipe(str: string) {
@@ -92,22 +98,26 @@ export default defineComponent({
         }
       }
     },
-    getExcursionByName(str: string, event: events){
-      console.log('event', event);
+    async getExcursionByName(str: string){
+      this.isSearchName = true;
       this.clearFilter = false;
       if (this.select) {
-        this.excursionArr.filter((el) => {
+        const arr: Array<IExcursion> = [];
+        this.excursionArr.forEach((el) => {
           if (el.title.toLowerCase().includes(str.toLowerCase())){
-            return el;
+            arr.push(el);
           }
         })
+        this.excursionArr = structuredClone(arr);
       } else {
-        this.getExcursion();
-        this.excursionArr.filter((el) => {
+        const arr: Array<IExcursion> = [];
+        await this.getExcursion();
+        this.excursionArr.forEach((el) => {
           if (el.title.toLowerCase().includes(str.toLowerCase())){
-            return el;
+            arr.push(el);
           }
         })
+        this.excursionArr = structuredClone(arr);
       }
     },
     clear(){
@@ -131,8 +141,8 @@ export default defineComponent({
   <div class="inputs">
     <div class="nameSearch">
       <i class="fa-times"></i>
-      <input class="search" v-model="this.searchName" v-on:keyup="getExcursionByName(this.searchName, $event)" >
-      <FontAwesomeIcon @click='cleanExcursion()' class="input-icon" :icon="faTimes()" :style="{ color: '#999999' }"/>
+      <input class="search" v-model="this.searchName" @click='this.searchName = ``' v-on:keyup="getExcursionByName(this.searchName)" >
+      <FontAwesomeIcon  @click='cleanExcursion()' class="input-icon" :icon="faTimes()" :style="{ color: '#999999' }"/>
     </div>
 
     <div class="dropdown-wrapper">
@@ -149,7 +159,7 @@ export default defineComponent({
       </div>
     </div>
   </div>
-  <div class="cards" v-if="this.select && !this.clearFilter">
+  <div class="cards" v-if="(this.excursionArr.length !==0) && !this.clearFilter">
     <div class="card" v-for="(excursion, index) in excursionArr" :key="{index}">
       <img v-bind:src="excursion.main_photo.big">
       <div class="line-block">
@@ -241,6 +251,7 @@ input {
           padding: 13px 15px;
           font-weight: 400;
           font-size: 14px;
+          background-color: rgba(255, 255, 255, 1);
 
           &:hover {
             background: #70878a;
@@ -318,6 +329,8 @@ input {
       FontAwesomeIcon {
         height: 22px;
         width: 22px;
+        vertical-align: middle;
+        padding: 5px;
       }
 
       .rating {

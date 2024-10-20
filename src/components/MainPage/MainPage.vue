@@ -17,11 +17,12 @@ export default defineComponent({
       searchName: 'Введите название экскурсии' as string,
       isVisible: false as boolean,
       selectItem: {
-       name: 'Выбрать город' as string} as ICity,
+       name: 'Выбрать город' as string
+      } as ICity,
       citysArr: [] as Array<ICity>,
       select: false as boolean,
       excursionArr: [] as Array<IExcursion>,
-
+      clearFilter: true as boolean
     }
   },
   methods: {
@@ -49,6 +50,7 @@ export default defineComponent({
       this.citysArr = await response.data ;
     },
      async setItem(city: ICity) {
+      this.clearFilter = false;
       console.log('city', city);
       this.selectItem = city;
       this.select = true;
@@ -91,7 +93,8 @@ export default defineComponent({
       }
     },
     getExcursionByName(str: string, event: events){
-      console.log('event', event)
+      console.log('event', event);
+      this.clearFilter = false;
       if (this.select) {
         this.excursionArr.filter((el) => {
           if (el.title.toLowerCase().includes(str.toLowerCase())){
@@ -99,12 +102,19 @@ export default defineComponent({
           }
         })
       } else {
-          this.getExcursion();
+        this.getExcursion();
         this.excursionArr.filter((el) => {
           if (el.title.toLowerCase().includes(str.toLowerCase())){
             return el;
           }
         })
+      }
+    },
+    clear(){
+      this.clearFilter = true;
+      this.searchName = 'Введите название экскурсии';
+      this.selectItem = {
+        name: 'Выбрать город'
       }
     }
   },
@@ -131,7 +141,7 @@ export default defineComponent({
           <input  v-model="this.selectItem.name">
           <FontAwesomeIcon @click="isVisible = !isVisible; getCities()" class="input-icon" :icon="faChevronDown()" :style="{ color: '#999999' }"/>
         </div>
-        <div v-if="isVisible && (this.citysArr.length !==0 )" class="options">
+        <div v-if="isVisible && (this.citysArr.length !== 0 )" class="options">
           <ul>
             <li v-for="(city, index) in citysArr" :key="{index}" @click='setItem(city)'>{{city.name}}</li>
           </ul>
@@ -139,10 +149,10 @@ export default defineComponent({
       </div>
     </div>
   </div>
-  <div v-if="this.select">
-    <div v-for="(excursion, index) in excursionArr" :key="{index}">
-      <img v-bind:src="excursion.main_photo.small">
-      <div>
+  <div class="cards" v-if="this.select && !this.clearFilter">
+    <div class="card" v-for="(excursion, index) in excursionArr" :key="{index}">
+      <img v-bind:src="excursion.main_photo.big">
+      <div class="line-block">
         <FontAwesomeIcon :icon="faStar()" :style="{ color: '#ffd300' }"></FontAwesomeIcon>
         <div class="rating">{{excursion.rating}}</div>
         <div class="reviews-with-text">({{excursion.reviews_with_text}})</div>
@@ -150,6 +160,12 @@ export default defineComponent({
       <h3>{{excursion.title}}</h3>
       <h2>от {{excursion.price}}</h2>
       <span>за {{typeActivityPipe(excursion.activity_type)}}</span>
+    </div>
+  </div>
+  <div v-if="this.excursionArr.length === 0 && !this.clearFilter">
+    <div class="not-found">
+      <div >Поиск не дал результатов</div>
+      <button class="blue-button" @click="clear()">Сбросить Фильтры</button>
     </div>
   </div>
 </div>
@@ -247,5 +263,97 @@ input {
   max-width: 350px;
 }
 
+.not-found {
+  font-weight: 400;
+  font-size: 34px;
+  color: rgba(0, 0, 0, 1);
+  margin-top: 200px;
+  .blue-button {
+    background-color: rgba(0, 167, 255, 1);
+    margin-top: 30px;
+    width: 200px;
+    height: 40px;
+    max-height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 34px;
+    padding-right: 34px;
+    line-height: 0px;
+    color: rgba(255, 255, 255, 1);
+    border: none;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    border-radius: 3px;
+  }
+}
+
+.cards {
+  width: 85%;
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: space-evenly;
+
+  .card {
+    display: inline-block;
+    text-align: left;
+    width: 25%;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-top: 50px;
+    vertical-align: top;
+
+    img {
+      width: 100%;
+      height: 200px;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .line-block {
+      display: flex;
+      margin-right: 5px;
+
+      FontAwesomeIcon {
+        height: 22px;
+        width: 22px;
+      }
+
+      .rating {
+        font-size: 14px;
+        line-height: 22px;
+      }
+
+      .reviews-with-text {
+        color: rgba(153, 153, 153, 1);
+        font-size: 14px;
+        line-height: 22px;
+      }
+
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 32px;
+    }
+
+    span {
+      color: rgba(153, 153, 153, 1);
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 22px;
+    }
+  }
+
+}
 
 </style>

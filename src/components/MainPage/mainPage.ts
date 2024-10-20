@@ -7,10 +7,10 @@ export function getExcursion(str1: string, event: events): string {
 }
 
 export interface ICity {
-    id: number,
-    country_id: number,
+    id?: number,
+    country_id?: number,
     name: string,
-    region_id: number
+    region_id?: number
 }
 
 export interface IExcursion {

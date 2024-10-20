@@ -1,5 +1,5 @@
 <template>
-  <img alt="Vue logo" src="./assets/Logo.svg">
+  <img class="logo" alt="Vue logo" src="./assets/Logo.svg">
   <MainPage msg="Welcome to Your Vue.js + TypeScript App"/>
 </template>
 
@@ -24,7 +24,7 @@ export default class App extends Vue {}
   color: #2c3e50;
   height: 100%;
 
-  img {
+  .logo {
     margin-top: 60px;
   }
 

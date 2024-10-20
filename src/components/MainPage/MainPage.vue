@@ -4,9 +4,11 @@ import {ICity, IExcursion} from "./mainPage";
 import {defineComponent} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {faChevronDown, faStar, faTimes} from "@fortawesome/free-solid-svg-icons";
+import CardExcursion from "@/components/CardExcursion/CardExcursion.vue";
+import {getExcursionFromServer} from "@/service/excursion-service";
 export default defineComponent({
   name: 'MainPage',
-  components: {FontAwesomeIcon},
+  components: {CardExcursion, FontAwesomeIcon},
   data() {
     return {
       title: `Экскурсии по всему миру` as string,
@@ -78,25 +80,8 @@ export default defineComponent({
       }
     },
     async getExcursion() {
-    const responce = await axios.get(
-        `https://thingproxy.freeboard.io/fetch/https://api.sputnik8.com/v1/products?api_key=873fa71c061b0c36d9ad7e47ec3635d9&username=frontend@sputnik8.com`,
-        {
-          headers: {
-            'Accept': 'application/json'
-          }
-        })
+    const responce = await getExcursionFromServer();
       this.excursionArr = await responce.data;
-
-    },
-    typeActivityPipe(str: string) {
-      switch (str) {
-        case 'tour': {
-          return 'тур';
-        }
-        case 'entry_ticket': {
-          return 'круиз';
-        }
-      }
     },
     async getExcursionByName(str: string){
       this.isSearchName = true;
@@ -161,15 +146,7 @@ export default defineComponent({
   </div>
   <div class="cards" v-if="(this.excursionArr.length !==0) && !this.clearFilter">
     <div class="card" v-for="(excursion, index) in excursionArr" :key="{index}">
-      <img v-bind:src="excursion.main_photo.big">
-      <div class="line-block">
-        <FontAwesomeIcon :icon="faStar()" :style="{ color: '#ffd300' }"></FontAwesomeIcon>
-        <div class="rating">{{excursion.rating}}</div>
-        <div class="reviews-with-text">({{excursion.reviews_with_text}})</div>
-      </div>
-      <h3>{{excursion.title}}</h3>
-      <h2>от {{excursion.price}}</h2>
-      <span>за {{typeActivityPipe(excursion.activity_type)}}</span>
+     <CardExcursion :excursion="excursion"></CardExcursion>
     </div>
   </div>
   <div v-if="this.excursionArr.length === 0 && !this.clearFilter">
@@ -309,40 +286,11 @@ input {
   .card {
     display: inline-block;
     text-align: left;
-    width: 25%;
-    margin-left: 1%;
-    margin-right: 1%;
+    width: 22%;
+    margin-left: 4%;
+    margin-right: 4%;
     margin-top: 50px;
     vertical-align: top;
-
-    img {
-      width: 100%;
-      height: 200px;
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-
-    .line-block {
-      display: flex;
-      margin-right: 5px;
-
-      FontAwesomeIcon {
-        height: 22px;
-        width: 22px;
-        vertical-align: middle;
-        padding: 5px;
-      }
-
-      .rating {
-        font-size: 14px;
-        line-height: 22px;
-      }
-
-      .reviews-with-text {
-        color: rgba(153, 153, 153, 1);
-        font-size: 14px;
-        line-height: 22px;
-      }
 
     }
 
@@ -366,7 +314,4 @@ input {
       line-height: 22px;
     }
   }
-
-}
-
 </style>

@@ -111,32 +111,32 @@ export default defineComponent({
     <div class="inputs">
       <div class="nameSearch">
         <i class="fa-times"></i>
-        <input v-model="this.searchName" class="search" placeholder="Введите название экскурсии"
-               @click='this.searchName = ``' v-on:keyup="getExcursionByName()">
+        <input v-model="searchName" class="search" placeholder="Введите название экскурсии"
+               @click='searchName = ``' v-on:keyup="getExcursionByName()">
         <FontAwesomeIcon :icon="faTimes()" :style="{ color: '#999999' }" class="input-icon" @click='cleanExcursion()'/>
       </div>
 
       <div class="dropdown-wrapper">
         <div class="dropdown-popover">
           <div>
-            <input v-model="this.selectedCity.name" placeholder="Выбрать город">
+            <input v-model="selectedCity.name" placeholder="Выбрать город">
             <FontAwesomeIcon :icon="faChevronDown()" :style="{ color: '#999999' }" class="input-icon"
                              @click="isVisible = !isVisible"/>
           </div>
           <div v-if="isVisible" class="options">
             <ul>
-              <li v-for="(city, index) in citiesArr" :key="{index}" @click='setCity(city)'>{{ city.name }}</li>
+              <li v-for="(city, index) in citiesArr" :key="index" @click='setCity(city)'>{{ city.name }}</li>
             </ul>
           </div>
         </div>
       </div>
     </div>
-    <div v-if="this.excursionToDisplayArr.length !== 0 && (!this.isNameEmpty() || !this.isCityEmpty())" class="cards">
-      <div v-for="(excursion, index) in excursionToDisplayArr" :key="{index}" class="card">
+    <div v-if="excursionToDisplayArr.length !== 0 && (!isNameEmpty() || !isCityEmpty())" class="cards">
+      <div v-for="(excursion, index) in excursionToDisplayArr" :key="index" class="card">
         <CardExcursion :excursion="excursion"></CardExcursion>
       </div>
     </div>
-    <div v-if="this.excursionToDisplayArr.length === 0 && (!this.isCityEmpty() || !this.isNameEmpty())">
+    <div v-if="excursionToDisplayArr.length === 0 && (!isCityEmpty() || !isNameEmpty())">
       <div class="not-found">
         <div>Поиск не дал результатов</div>
         <button class="blue-button" @click="clear()">Сбросить Фильтры</button>
